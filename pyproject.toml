@@ -1,0 +1,35 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boss_auto_demo"
+version = "0.1.0"
+description = "自动化测试框架 Demo"
+requires-python = ">=3.9"
+dependencies = [
+    "playwright==1.44.0",
+    "pytest==8.3.4",
+    "pytest-xdist==3.5.0",
+    "pyyaml==6.0.1",
+    "requests==2.32.0",
+    "allure-pytest==2.16.0",
+]
+
+# 👇 关键修复：显式声明只包含 core 包
+[tool.setuptools.packages.find]
+include = ["core*"]           # 只包含 core 及其子包
+exclude = ["config*", "reports*", "tests*", "venv*", ".git*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+addopts = "-v --tb=short -ra --strict-markers"
+markers = [
+    "smoke: 冒烟测试",
+    "regression: 回归测试",
+    "api: 接口测试",
+    "ui: UI 测试",
+]

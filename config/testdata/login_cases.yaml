@@ -1,0 +1,43 @@
+# config/testdata/login_cases.yaml
+# ────────────────────────────────────────────────────────────
+# 测试数据文件：每一项 = 一个测试场景
+# 字段含义：
+#   case_id   : 用例编号（报告里显示，方便追踪）
+#   name      : 人类可读的场景名
+#   user_key  : 引用 config/env.yaml 里 users 下的键（standard/locked/problem）
+#   username  : 可选，覆盖 user_key 里的用户名（如测试空用户名）
+#   password  : 可选，覆盖 user_key 里的密码（如测试错误密码）
+#   expect_success : true=预期登录成功，false=预期登录失败
+#   expect_error_contains : 预期失败时，报错文案必须包含的关键字（不区分大小写）
+# ────────────────────────────────────────────────────────────
+
+- case_id: "TC-LOGIN-001"
+  name: "标准用户登录成功"
+  user_key: "standard"
+  expect_success: true
+
+- case_id: "TC-LOGIN-002"
+  name: "锁定用户登录失败"
+  user_key: "locked"
+  expect_success: false
+  expect_error_contains: "locked out"
+
+- case_id: "TC-LOGIN-003"
+  name: "问题用户登录成功但 UI 有瑕疵"
+  user_key: "problem"
+  expect_success: true
+  # 可扩展字段：expect_ui_issue: true
+
+- case_id: "TC-LOGIN-004"
+  name: "错误密码登录失败"
+  user_key: "standard"
+  password: "wrong_password" # 覆盖配置里的密码
+  expect_success: false
+  expect_error_contains: "do not match"
+
+- case_id: "TC-LOGIN-005"
+  name: "空用户名登录失败"
+  username: "" # 直接给用户名，不走 user_key
+  password: "secret_sauce"
+  expect_success: false
+  expect_error_contains: "required"

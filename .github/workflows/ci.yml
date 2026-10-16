@@ -58,14 +58,31 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: "pip" # 缓存 ~/.cache/pip，下次装依赖极快
 
-      # ─── 3. 安装依赖 ───
+      # ─── 3. 安装依赖 + 浏览器 ───
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install --with-deps chromium  # 装浏览器+系统依赖
+          # 用 python -m 入口安装，保证与当前 Python 环境一致
+          # （裸 playwright 命令可能因 PATH 问题找不到）
+          python -m playwright install --with-deps chromium
 
-      # ─── 4. 运行测试（并行、生成 Allure 结果）───
+      # ─── 4. 校验浏览器是否安装成功 ───
+      - name: Verify Playwright browsers
+        run: |
+          python -c "
+          from playwright.sync_api import sync_playwright
+          p = sync_playwright().start()
+          exe = p.chromium.executable_path
+          if exe is None:
+              print('ERROR: Chromium executable not found!')
+              exit(1)
+          print(f'Chromium executable: {exe}')
+          p.stop()
+          print('OK: Playwright browser is ready.')
+          "
+
+      # ─── 5. 运行测试（并行、生成 Allure 结果）───
       - name: Run tests
         run: |
           mkdir -p allure-results reports
@@ -74,7 +91,7 @@ jobs:
           # --clean-alluredir：先清空旧结果
           pytest tests/ -n 2 --alluredir=allure-results --clean-alluredir -q
 
-      # ─── 5. 上传 Allure 结果（作为 Artifact）───
+      # ─── 6. 上传 Allure 结果（作为 Artifact）───
       - name: Upload Allure results
         if: always() # 无论成功失败都上传
         uses: actions/upload-artifact@v4
@@ -83,7 +100,22 @@ jobs:
           path: allure-results/
           retention-days: 7 # 保留 7 天
 
-      # ─── 6. 上传失败截图/视频 ───
+      # ─── 7. 清洗截图文件名（actions/upload-artifact v4 不允许 : " < > | * ? \r \n）───
+      - name: Sanitize screenshot filenames
+        if: always()
+        run: |
+          find reports/ -type f -print0 | while IFS= read -r -d '' f; do
+            dir=$(dirname "$f")
+            base=$(basename "$f")
+            # 替换所有 artifact 不允许的字符为下划线
+            clean=$(echo "$base" | sed 's/[:<>|*?"'\'']/_/g')
+            if [ "$base" != "$clean" ]; then
+              mv "$f" "$dir/$clean" 2>/dev/null || true
+            fi
+          done
+        shell: bash
+
+      # ─── 8. 上传失败截图/视频 ───
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -92,14 +124,14 @@ jobs:
           path: reports/
           retention-days: 7
 
-      # ─── 7. 生成 Allure 报告（用 npm 安装 allure 命令行，apt 源里没有 allure 包）───
+      # ─── 9. 生成 Allure 报告（用 npm 安装 allure 命令行，apt 源里没有 allure 包）───
       - name: Generate Allure Report
         if: always()
         run: |
           npm install -g allure-commandline
           allure generate allure-results -o allure-report --clean
 
-      # ─── 8. 上传 Allure 报告制品（可下载查看）───
+      # ─── 10. 上传 Allure 报告制品（可下载查看）───
       - name: Upload Allure Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -108,7 +140,7 @@ jobs:
           path: allure-report/
           retention-days: 7
 
-      # ─── 9. 部署到 GitHub Pages（可选，需仓库开启 Pages）───
+      # ─── 11. 部署到 GitHub Pages（可选，需仓库开启 Pages）───
       - name: Deploy to GitHub Pages
         if: always() && github.ref == 'refs/heads/main' && github.repository_owner == 'wdenylily'
         uses: peaceiris/actions-gh-pages@v3

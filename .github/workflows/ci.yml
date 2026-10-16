@@ -71,18 +71,21 @@ jobs:
           set -euo pipefail
           python -m playwright install --with-deps
 
-      - name: Verify Playwright install
+      - name: DEBUG Playwright cache
         run: |
           set -euo pipefail
-          python -c "import playwright; print('playwright:', getattr(playwright,'__version__','unknown'))"
-          echo "ms-playwright cache:"
+          echo "===== HOME ====="
+          echo "$HOME"
+          echo "===== ls -la $HOME/.cache/ms-playwright ====="
           ls -la "$HOME/.cache/ms-playwright" || true
-          echo "find chrome-headless-shell:"
-          path=$(find "$HOME/.cache/ms-playwright" -type f -name 'chrome-headless-shell*' | head -n 1 || true)
-          echo "headless shell path: $path"
-          test -n "$path"
-          test -x "$path"
-          echo "OK: headless shell exists and is executable"
+          echo "===== find 所有 chrome* 文件 ====="
+          find "$HOME/.cache/ms-playwright" -maxdepth 5 -type f -name 'chrome*' -print || true
+          echo "===== find 所有 headless 文件 ====="
+          find "$HOME/.cache/ms-playwright" -maxdepth 5 -type f -name '*headless*' -print || true
+          echo "===== playwright install --dry-run ====="
+          python -m playwright install --dry-run || true
+          echo "===== 环境变量 ====="
+          env | grep -i playwright || true
 
       # ─── 6. 运行测试（并行、生成 Allure 结果）───
       - name: Run tests

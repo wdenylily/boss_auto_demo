@@ -66,31 +66,16 @@ jobs:
           # 打印安装的 playwright 版本，便于排查版本不匹配
           python -c "import playwright; print('playwright version:', playwright.__version__ if hasattr(playwright, '__version__') else 'unknown')"
 
-      # ─── 4. 安装 Playwright 浏览器（独立步骤，确保先有 pip 包再下载浏览器）───
-      - name: Install Playwright browsers
+      - name: Install Playwright browsers (strict)
         run: |
-          # 用 python -m 入口，保证调用的是当前 Python 环境的 playwright
-          # （裸 playwright 命令可能因 PATH 找不到或指向别的环境）
+          set -euo pipefail
+          rm -rf "$HOME/.cache/ms-playwright" || true
           python -m playwright install --with-deps chromium
 
-      # ─── 5. 校验浏览器是否真实存在 ───
-      - name: Verify Playwright browsers
+      - name: Show Playwright install info (debug + verify)
         run: |
-          python -c "
-          import os
-          from playwright.sync_api import sync_playwright
-          p = sync_playwright().start()
-          exe = p.chromium.executable_path
-          print(f'Expected Chromium path: {exe}')
-          # executable_path 即使浏览器没装也会返回一个字符串，必须用 exists 检查
-          if not exe or not os.path.exists(exe):
-              print(f'ERROR: Chromium executable does not exist at {exe}')
-              print('   → 说明 python -m playwright install 未成功下载浏览器')
-              p.stop()
-              exit(1)
-          print(f'OK: Chromium executable found: {exe}')
-          p.stop()
-          "
+          set -euo pipefail
+          python -c "from playwright.sync_api import sync_playwright; p=sync_playwright().start(); exe=p.chromium.executable_path; print('Chromium path:', exe); import os, sys; sys.exit(0 if exe and os.path.exists(exe) else 1); p.stop()"
 
       # ─── 6. 运行测试（并行、生成 Allure 结果）───
       - name: Run tests

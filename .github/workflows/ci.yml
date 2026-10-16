@@ -66,16 +66,23 @@ jobs:
           # 打印安装的 playwright 版本，便于排查版本不匹配
           python -c "import playwright; print('playwright version:', playwright.__version__ if hasattr(playwright, '__version__') else 'unknown')"
 
-      - name: Install Playwright browsers (strict)
+      - name: Install Playwright browsers
         run: |
           set -euo pipefail
-          rm -rf "$HOME/.cache/ms-playwright" || true
-          python -m playwright install --with-deps chromium chromium-headless-shell
+          python -m playwright install --with-deps
 
-      - name: Show Playwright install info (debug + verify)
+      - name: Verify Playwright install
         run: |
           set -euo pipefail
-          python -c "from playwright.sync_api import sync_playwright; p=sync_playwright().start(); exe=p.chromium.executable_path; print('Chromium path:', exe); import os, sys; sys.exit(0 if exe and os.path.exists(exe) else 1); p.stop()"
+          python -c "import playwright; print('playwright:', getattr(playwright,'__version__','unknown'))"
+          echo "ms-playwright cache:"
+          ls -la "$HOME/.cache/ms-playwright" || true
+          echo "find chrome-headless-shell:"
+          path=$(find "$HOME/.cache/ms-playwright" -type f -name 'chrome-headless-shell*' | head -n 1 || true)
+          echo "headless shell path: $path"
+          test -n "$path"
+          test -x "$path"
+          echo "OK: headless shell exists and is executable"
 
       # ─── 6. 运行测试（并行、生成 Allure 结果）───
       - name: Run tests

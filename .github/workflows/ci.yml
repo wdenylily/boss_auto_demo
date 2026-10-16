@@ -165,4 +165,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.11", cache: "pip" }
       - run: pip install -r requirements.txt
-      - run: pytest tests/test_api_login.py -v
+      # 只跑纯接口测试，排除需要浏览器的 UI 用例（此 job 未装浏览器）
+      # -k "not ui"：按测试名关键字排除含 "ui" 的用例
+      # （不用 -m "not ui"：当前测试函数未打 @pytest.mark.ui 标记，-m 会误选全部）
+      - run: pytest tests/test_api_login.py -k "not ui" -v

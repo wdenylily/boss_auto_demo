@@ -89,8 +89,12 @@ def page(context):
     # 截一张「结束时」的全页截图，方便事后复盘
     try:
         # 生成文件名：时间戳 + URL 片段（去掉非法字符）
+        # GitHub Actions upload-artifact 不允许文件名含 : " < > | * ? \r \n
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        safe_url = pg.url.replace("https://", "").replace("http://", "").replace("/", "_")[:80]
+        _raw_url = pg.url.replace("https://", "").replace("http://", "").replace("/", "_")
+        for _bad in (":", '"', "<", ">", "|", "*", "?", "\r", "\n"):
+            _raw_url = _raw_url.replace(_bad, "_")
+        safe_url = _raw_url[:80]
         shot_path = f"reports/last_{safe_url}_{timestamp}.png"
         pg.screenshot(path=shot_path, full_page=True)
         print(f"📸 运行末态截图: {shot_path}")
@@ -144,9 +148,12 @@ def pytest_runtest_makereport(item, call):
         # 从测试项的 fixture 缓存里拿到 page 对象
         page = item.funcargs.get("page")
         if page:
-            # 生成失败截图文件名
+            # 生成失败截图文件名（清洗非法字符，artifact 上传不允许 : " < > | * ? 等）
             timestamp = time.strftime("%Y%m%d_%H%M%S")
-            shot_name = f"FAILED_{item.name}_{timestamp}.png"
+            _safe_name = item.name
+            for _bad in (":", '"', "<", ">", "|", "*", "?", "\r", "\n"):
+                _safe_name = _safe_name.replace(_bad, "_")
+            shot_name = f"FAILED_{_safe_name}_{timestamp}.png"
             shot_path = f"reports/{shot_name}"
             try:
                 page.screenshot(path=shot_path, full_page=True)

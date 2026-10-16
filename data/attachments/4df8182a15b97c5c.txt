@@ -1,2 +1,0 @@
-✅ PO 版本：锁定用户报错符合预期
-📸 运行末态截图: reports/last_www.saucedemo.com__20261016_103550.png

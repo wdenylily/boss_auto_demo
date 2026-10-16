@@ -70,7 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf "$HOME/.cache/ms-playwright" || true
-          python -m playwright install --with-deps chromium
+          python -m playwright install --with-deps chromium chromium-headless-shell
 
       - name: Show Playwright install info (debug + verify)
         run: |

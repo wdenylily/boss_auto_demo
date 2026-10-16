@@ -24,8 +24,8 @@ on:
 # ═══════════════════════════════════════════════════════════
 env:
   PYTHON_VERSION: "3.11"
-  # 让 Playwright 把浏览器缓存到 GitHub Actions 缓存层，下次跑极快
-  PLAYWRIGHT_BROWSERS_PATH: 0
+  # CI 的 Linux 运行器没有显示器，必须用无头模式跑浏览器
+  HEADLESS: "true"
 
 # ═══════════════════════════════════════════════════════════
 # Job 定义
@@ -34,6 +34,11 @@ jobs:
   test:
     name: Run Tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    # 权限：允许写入仓库内容（推送 gh-pages 分支部署 Pages）
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     # 矩阵策略：多 OS/多 Python 版本并行
     strategy:
       matrix:
@@ -87,11 +92,11 @@ jobs:
           path: reports/
           retention-days: 7
 
-      # ─── 7. 生成 Allure 报告（原生命令，无第三方 Action）───
+      # ─── 7. 生成 Allure 报告（用 npm 安装 allure 命令行，apt 源里没有 allure 包）───
       - name: Generate Allure Report
         if: always()
         run: |
-          sudo apt-get update && sudo apt-get install -y allure
+          npm install -g allure-commandline
           allure generate allure-results -o allure-report --clean
 
       # ─── 8. 上传 Allure 报告制品（可下载查看）───

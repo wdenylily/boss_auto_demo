@@ -3,6 +3,7 @@
 """  # 模块说明开始。
 配置加载器：单例模式，全局唯一入口  # 统一读取并提供测试环境配置。
 """  # 模块说明结束。
+import os  # 导入系统模块，用于读取环境变量（CI 环境下覆盖配置）。
 import yaml  # 导入 YAML 解析库，用于读取 env.yaml。
 from pathlib import Path  # 导入跨平台路径处理工具。
 from types import SimpleNamespace  # 导入可通过属性访问数据的简单对象。
@@ -30,6 +31,12 @@ class Config:  # 定义配置管理类，封装配置文件读取和访问逻辑
             with open(config_path, encoding="utf-8") as f:  # 使用 UTF-8 打开配置文件。
                 raw = yaml.safe_load(f)  # 安全解析 YAML 内容为 Python 数据。
             cls._data = _dict_to_namespace(raw)  # 将字典转换为可用点号访问的对象。
+
+            # 环境变量覆盖：CI（Linux 无头环境）通过 HEADLESS=true 强制无头模式。
+            # 本地开发不设置该变量，仍使用 env.yaml 里的 headless: false（有界面，便于观察）。
+            _headless_env = os.getenv("HEADLESS")
+            if _headless_env is not None:
+                cls._data.headless = _headless_env.lower() in ("true", "1", "yes", "on")
         return cls._instance  # 后续调用直接返回同一个实例。
 
     def __getattr__(self, key):  # 当 Config 没有该属性时，转向配置数据中查找。

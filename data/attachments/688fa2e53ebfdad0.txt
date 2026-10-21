@@ -1,4 +1,4 @@
+✅ 第 1 步通过：登录测试跑通！
 [CONSOLE error] Failed to load resource: the server responded with a status of 401 (Unauthorized)
 [CONSOLE error] Failed to load resource: the server responded with a status of 401 (Unauthorized)
-✅ 复用登录态，直接测试后续业务
-📸 运行末态截图: reports/last_www.saucedemo.com_inventory.html_20261020_071800.png
+📸 运行末态截图: reports/last_www.saucedemo.com_inventory.html_20261021_071450.png

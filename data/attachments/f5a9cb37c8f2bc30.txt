@@ -1,3 +1,0 @@
-
-🌍 当前运行环境: test
-📸 运行末态截图: reports/last_about_blank_20261025_072317.png

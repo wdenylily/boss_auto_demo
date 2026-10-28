@@ -1,4 +1,4 @@
 [CONSOLE error] Failed to load resource: the server responded with a status of 404 ()
 ✅ 演示：API token 注入 UI 流程跑通
 💡 真实项目中：断言页面出现用户头像、或接口返回用户信息，即可验证登录态生效
-📸 运行末态截图: reports/last_www.saucedemo.com_inventory.html_20261027_072904.png
+📸 运行末态截图: reports/last_www.saucedemo.com_inventory.html_20261028_080140.png

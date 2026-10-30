@@ -1,0 +1,2 @@
+✅ 使用配置 [chromium] 登录通过！
+📸 运行末态截图: reports/last_www.saucedemo.com_inventory.html_20261030_081530.png

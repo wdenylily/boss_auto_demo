@@ -1,0 +1,2 @@
+✅ PO 版本：标准用户登录通过
+📸 运行末态截图: reports/last_www.saucedemo.com_inventory.html_20261104_084618.png

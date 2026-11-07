@@ -1,0 +1,2 @@
+✅ 第 1 步通过：登录测试跑通！
+📸 运行末态截图: reports/last_www.saucedemo.com_inventory.html_20261107_083009.png

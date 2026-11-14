@@ -1,0 +1,2 @@
+✅ 锁定用户登录失败，报错符合预期
+📸 运行末态截图: reports/last_www.saucedemo.com__20261114_084359.png
